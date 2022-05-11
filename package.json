@@ -1,0 +1,47 @@
+{
+  "name": "testcafe-reporter-made-by-margarit",
+  "version": "1.0.0",
+  "description": "made-by-margarit TestCafe reporter plugin.",
+  "repository": "https://github.com/margaritluch/testcafe-reporter-made-by-margarit",
+  "author": {
+    "name": "Margarit",
+    "email": "mahl@stofa.dk"
+  },
+  "main": "lib/index",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "gulp test",
+    "publish-please": "publish-please",
+    "prepublish": "publish-please guard"
+  },
+  "keywords": [
+    "testcafe",
+    "reporter",
+    "plugin"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/eslint-parser": "^7.5.4",
+    "callsite-record": "^3.2.0",
+    "del": "^6.0.0",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-eslint": "^5.0.0",
+    "gulp-mocha": "^8.0.0",
+    "normalize-newline": "^1.0.2",
+    "publish-please": "^2.4.1",
+    "read-file-relative": "^1.2.0",
+    "testcafe": "^1.0.1"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.3.4",
+    "@dlenroc/testrail": "^1.6.3",
+    "dotenv": "^16.0.1",
+    "testrail-api": "^1.3.6"
+  }
+}
