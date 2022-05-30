@@ -2,7 +2,10 @@
   "name": "testcafe-reporter-made-by-margarit",
   "version": "1.2.0",
   "description": "made-by-margarit TestCafe reporter plugin.",
-  "repository": "https://github.com/margaritluch/testcafe-reporter-made-by-margarit",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": "git://github.com/margaritluch/testcafe-reporter-made-by-margarit",
   "author": {
     "name": "Margarit",
     "email": "margaritdk@gmail.com"
