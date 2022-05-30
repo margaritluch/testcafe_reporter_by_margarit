@@ -4,10 +4,6 @@
 
 This is the **made-by-margarit** reporter plugin for [TestCafe](http://devexpress.github.io/testcafe).
 
-<p align="center">
-    <img src="https://raw.github.com/margaritluch/testcafe-reporter-made-by-margarit/master/media/preview.png" alt="preview" />
-</p>
-
 ## Install
 
 ```
@@ -16,7 +12,52 @@ npm install testcafe-reporter-made-by-margarit
 
 ## Usage
 
-This plugin is using a testrail api library written in typescript. In order to make the reporter to work you need to open Testrail.ts class and make the methods that are used in my reports index.js file public.
+This plugin is using [this library](https://www.npmjs.com/package/@dlenroc/testrail) written in typescript. In order to make the reporter to work you need to open Testrail.ts class inside @dlenroc library and make the methods that are used in index.js file public. Example is shown on the picture below.
+
+![Making necessary methods public](/media/public_methods.png)
+
+Before using Testrail publisher, You need to set testcase description in `specific format` as per below.
+
+##### Format:
+
+```
+test('<< Group Name>> | << Test Name >> | << Testrail Case_ID >> ', async t => { .... });
+
+<< Group Name >> - It can be any like smoke, sanity, functional.
+<< Test Name >>  - Test name of the test case
+<< Testrail Case_ID >>  - case ID of testrail's test case (The testcase should be present in the given PROJECT_NAME). Case id-s can be found in testrail
+
+Example:
+
+test('Regression | Verify the Login Page | C875986 ', async t=> { ... });
+```
+
+If you want you can also add test steps in the comment field every time tests are run. You can do it the following way:
+
+```
+const LoiginTest_Steps =[];
+test.meta({ steps: LoginTest_Steps })('<< Group Name>> | << Test Name >> | << Testrail Case_ID >> ', async t => {
+    await t.click(x_button);
+    LoginTest_Steps.push("I click on x button);
+});
+```
+
+The result will look like this in Testrail:
+![Steps in Testrail](/media/reporter_steps.png)
+
+##### Environment Variables
+
+You need to add a file with .env extension into your project and define all the environment variables there.
+
+```
+TESTRAIL_ENABLE : set true to enable Testrail api | default: false
+TESTRAIL_HOST : the url to your testrail api
+TESTRAIL_USER : username
+TESTRAIL_PASS : password or api key
+PROJECT_ID : project id
+PLAN_ID : plan id
+SUITE_ID : suite id
+```
 
 When you run tests from the command line, specify the reporter name by using the `--reporter` option:
 
