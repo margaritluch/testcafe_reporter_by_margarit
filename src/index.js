@@ -13,8 +13,7 @@ exports["default"] = function () {
         passed: "",
         failed: "",
         EnableTestrail: false,
-        SuiteID: 0,
-        PlanName: "",
+        RunID: 0,
         currentFixtureName: null,
         TestrailUserName: null,
         TestrailPassword: null,
@@ -30,7 +29,6 @@ exports["default"] = function () {
         totalTaskTime: "",
         errorTestData: [],
         creationDate: "",
-        PlanID: 0,
         ProjectID: 0,
         ConfigID: [],
 
@@ -57,21 +55,19 @@ exports["default"] = function () {
             this.TestrailPassword = process.env.TESTRAIL_PASS;
             this.TestrailUserName = process.env.TESTRAIL_USER;
             this.ProjectID = Number(process.env.PROJECT_ID);
-            this.PlanID = Number(process.env.PLAN_ID);
-            this.SuiteID = Number(process.env.SUITE_ID);
+            this.RunID = Number(process.env.RunID);
 
             if (this.EnableTestrail) {
                 if (
                     !this.ProjectID ||
-                    !this.SuiteID ||
-                    !this.PlanID ||
                     !this.TestrailHost ||
                     !this.TestrailPassword ||
-                    !this.TestrailUserName
+                    !this.TestrailUserName ||
+                    !this.RunID
                 ) {
                     this.newline().write(
                         this.chalk.red.bold(
-                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS, PROJECT_ID, PLAN_ID and SUITE_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
+                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS, PROJECT_ID and RUN_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
                         )
                     );
                     process.exit(1);
@@ -110,9 +106,8 @@ exports["default"] = function () {
                 .duration(testRunInfo.durationMs)
                 .format("h[h] mm[m] ss[s]");
             testOutput[5] = meta.steps;
-            console.log("testoutput 2 is " + testOutput[2]);
+
             let error = {};
-            //let screenshots ={};
 
             if (testRunInfo.skipped) {
                 this.skipped++;
@@ -145,7 +140,7 @@ exports["default"] = function () {
             this.testResult.push(testOutput);
         },
 
-        reportTaskDone(endTime, passed) {
+        async reportTaskDone(endTime, passed) {
             let durationMs = endTime - this.startTime;
             let durationStr = this.moment
                 .duration(durationMs)
@@ -185,7 +180,9 @@ exports["default"] = function () {
                 date.getSeconds();
 
             if (this.EnableTestrail) {
-                this.publishResultToTestrail();
+                await this.publishResultToTestrail()
+                    .catch(console.error)
+                    .then(() => console.log("Publising results to Testrail"));
             }
         },
 
@@ -201,7 +198,7 @@ exports["default"] = function () {
             });
         },
 
-        publishResultToTestrail() {
+        async publishResultToTestrail() {
             let resultsTestcases = [];
             let caseidList = [];
             this.newline()
@@ -287,45 +284,9 @@ exports["default"] = function () {
                 password: this.TestrailPassword,
             });
 
-            let AgentDetails = this.agents[0].split("/");
+            let result = { results: resultsTestcases };
 
-            let rundetails = {
-                suite_id: this.SuiteID,
-                include_all: false,
-                case_ids: caseidList,
-                name:
-                    "Run_" +
-                    this.creationDate +
-                    "(" +
-                    AgentDetails[0] +
-                    "_" +
-                    AgentDetails[1] +
-                    ")",
-            };
-            let runId = null;
-            let result = null;
-
-            testrail_api
-                .addPlanEntry(this.PlanID, rundetails)
-                .then(function (response) {
-                    runId = response.runs[0].id;
-                    result = {
-                        results: resultsTestcases,
-                    };
-
-                    testrail_api
-                        .addResultsForCases(runId, result)
-                        .then(function (response) {
-                            result.results.forEach(function (res, idx) {
-                                testrail_api
-                                    .addResultForCase(runId, res.caseID)
-                                    .then(function (response) {});
-                                testrail_api
-                                    .addResult(res.caseID, result)
-                                    .then(function (response) {});
-                            });
-                        });
-                });
+            testrail_api.addResultsForCases(this.RunId, result);
         },
     };
 };
