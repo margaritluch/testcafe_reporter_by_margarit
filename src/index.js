@@ -29,10 +29,8 @@ exports["default"] = function () {
         totalTaskTime: "",
         errorTestData: [],
         creationDate: "",
-        ProjectID: 0,
-        ConfigID: [],
 
-        reportTaskStart(startTime, userAgents, testCount) {
+        async reportTaskStart(userAgents, testCount) {
             this.startTime = new Date();
             this.testCount = testCount;
             this.setIndent(2)
@@ -54,12 +52,10 @@ exports["default"] = function () {
             this.TestrailHost = process.env.TESTRAIL_HOST;
             this.TestrailPassword = process.env.TESTRAIL_PASS;
             this.TestrailUserName = process.env.TESTRAIL_USER;
-            this.ProjectID = Number(process.env.PROJECT_ID);
             this.RunID = Number(process.env.RunID);
 
             if (this.EnableTestrail) {
                 if (
-                    !this.ProjectID ||
                     !this.TestrailHost ||
                     !this.TestrailPassword ||
                     !this.TestrailUserName ||
@@ -67,7 +63,7 @@ exports["default"] = function () {
                 ) {
                     this.newline().write(
                         this.chalk.red.bold(
-                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS, PROJECT_ID and RUN_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
+                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS and RUN_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
                         )
                     );
                     process.exit(1);
@@ -75,11 +71,11 @@ exports["default"] = function () {
             }
         },
 
-        reportFixtureStart(name) {
+        async reportFixtureStart(name) {
             this.currentFixtureName = name;
         },
 
-        reportTestDone(name, testRunInfo, meta) {
+        async reportTestDone(name, testRunInfo, meta) {
             this.testEndTime = new Date();
             let numberOfErrors = testRunInfo.errs.length;
             let result =
@@ -286,7 +282,7 @@ exports["default"] = function () {
 
             let result = { results: resultsTestcases };
 
-            testrail_api.addResultsForCases(this.RunId, result);
+            await testrail_api.addResultsForCases(this.RunId, result);
         },
     };
 };
