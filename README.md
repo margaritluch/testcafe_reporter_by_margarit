@@ -54,9 +54,7 @@ TESTRAIL_ENABLE : set true to enable Testrail api | default: false
 TESTRAIL_HOST : the url to your testrail api
 TESTRAIL_USER : username
 TESTRAIL_PASS : password or api key
-PROJECT_ID : project id
-PLAN_ID : plan id
-SUITE_ID : suite id
+RUN_ID : the id of the testrun where the reesults will be added
 ```
 
 When you run tests from the command line, specify the reporter name by using the `--reporter` option:
