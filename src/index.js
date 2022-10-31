@@ -29,6 +29,7 @@ exports["default"] = function () {
         totalTaskTime: "",
         errorTestData: [],
         creationDate: "",
+        screenshots: [],
 
         async reportTaskStart(userAgents, testCount) {
             this.startTime = new Date();
@@ -102,7 +103,10 @@ exports["default"] = function () {
                 .duration(testRunInfo.durationMs)
                 .format("h[h] mm[m] ss[s]");
             testOutput[5] = meta.steps;
-
+            if (testRunInfo.screenshots.length) {
+                this.screenshots.push(testRunInfo.screenshots);
+            }
+            testOutput[6] = this.screenshots;
             let error = {};
 
             if (testRunInfo.skipped) {
@@ -132,7 +136,6 @@ exports["default"] = function () {
                 });
                 this.errorTestData.push(error);
             }
-
             this.testResult.push(testOutput);
         },
 
