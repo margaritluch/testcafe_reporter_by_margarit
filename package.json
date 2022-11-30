@@ -1,6 +1,6 @@
 {
   "name": "testcafe-reporter-made-by-margarit",
-  "version": "1.2.0",
+  "version": "2.1.0",
   "description": "made-by-margarit TestCafe reporter plugin.",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
