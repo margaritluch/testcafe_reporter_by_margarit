@@ -12,10 +12,6 @@ npm install testcafe-reporter-made-by-margarit
 
 ## Usage
 
-This plugin is using [this library](https://www.npmjs.com/package/@dlenroc/testrail) written in typescript. In order to make the reporter to work you need to open Testrail.ts class inside @dlenroc library and make the methods that are used in index.js file public. Example is shown on the picture below.
-
-![Making necessary methods public](/media/public_methods.png)
-
 Before using Testrail publisher, You need to set testcase description in `specific format` as per below.
 
 ##### Format:
