@@ -1,7 +1,7 @@
 /*dotenv is a module that loads environment variables from a .env file into process.env */
 require("dotenv").config();
 
-let TestRail = require("@dlenroc/testrail");
+let TestRail = require("testrail-js-api");
 
 exports["default"] = function () {
     return {
@@ -13,7 +13,7 @@ exports["default"] = function () {
         passed: "",
         failed: "",
         EnableTestrail: false,
-        RunID: 0,
+        PlanName: "",
         currentFixtureName: null,
         TestrailUserName: null,
         TestrailPassword: null,
@@ -30,8 +30,13 @@ exports["default"] = function () {
         errorTestData: [],
         creationDate: "",
         screenshots: [],
+        RunID: 0,
+        PlanID: 0,
+        ProjectID: 0,
+        ConfigId: [],
+        RunID: 0,
 
-        async reportTaskStart(userAgents, testCount) {
+        async reportTaskStart(startTime, userAgents, testCount) {
             this.startTime = new Date();
             this.testCount = testCount;
             this.setIndent(2)
@@ -53,18 +58,21 @@ exports["default"] = function () {
             this.TestrailHost = process.env.TESTRAIL_HOST;
             this.TestrailPassword = process.env.TESTRAIL_PASS;
             this.TestrailUserName = process.env.TESTRAIL_USER;
-            this.RunID = Number(process.env.RunID);
+            this.ProjectID = Number(process.env.PROJECT_ID);
+            this.PlanID = Number(process.env.PLAN_ID);
+            this.RunID = Number(process.env.RUN_ID);
 
             if (this.EnableTestrail) {
                 if (
                     !this.TestrailHost ||
                     !this.TestrailPassword ||
                     !this.TestrailUserName ||
-                    !this.RunID
+                    !this.ProjectID ||
+                    !this.PlanID
                 ) {
                     this.newline().write(
                         this.chalk.red.bold(
-                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS and RUN_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
+                            "Error:  TESTRAIL_HOST, TESTRAIL_USER, TESTRAIL_PASS, PROJECT_ID and PLAN_ID must be set as environment variables inside .env file for the reporter plugin to push the result to the Testrail"
                         )
                     );
                     process.exit(1);
@@ -89,9 +97,7 @@ exports["default"] = function () {
             let testOutput = {};
             let testStatus = "";
 
-            if (testRunInfo.skipped) {
-                testStatus = "Skipped";
-            } else if (numberOfErrors === 0) {
+            if (numberOfErrors === 0) {
                 testStatus = "Passed";
             } else {
                 testStatus = "Failed";
@@ -106,8 +112,11 @@ exports["default"] = function () {
             if (testRunInfo.screenshots.length) {
                 this.screenshots.push(testRunInfo.screenshots);
             }
-            testOutput[6] = this.screenshots;
             let error = {};
+
+            if (testRunInfo.screenshots.length) {
+                testOutput[6] = testRunInfo.screenshots[0].screenshotPath;
+            }
 
             if (testRunInfo.skipped) {
                 this.skipped++;
@@ -181,7 +190,9 @@ exports["default"] = function () {
             if (this.EnableTestrail) {
                 await this.publishResultToTestrail()
                     .catch(console.error)
-                    .then(() => console.log("Publising results to Testrail"));
+                    .then(() =>
+                        console.log(" I'm publising results to Testrail")
+                    );
             }
         },
 
@@ -199,6 +210,7 @@ exports["default"] = function () {
 
         async publishResultToTestrail() {
             let resultsTestcases = [];
+            let allScreenshots = {};
             let caseidList = [];
             this.newline()
                 .newline()
@@ -220,13 +232,24 @@ exports["default"] = function () {
                         .write(
                             "Warning:  Test: " +
                                 this.testResult[index][1] +
-                                " missing the Testrail ID"
+                                " Missing the Testrail ID"
                         );
                     continue;
                 }
 
                 caseID = String(testDesc[2]).toUpperCase().replace("C", ""); // remove the prefix C from CaseID
                 //to check that caseID is valid ID using isnumber function
+
+                if (caseID == 0) {
+                    this.newline()
+                        .write(this.chalk.red.bold(this.symbols.err))
+                        .write(
+                            "Attention: Test: " +
+                                this.testResult[index][1] +
+                                " is skipped as it is platform specific"
+                        );
+                    continue;
+                }
 
                 if (isNaN(caseID)) {
                     this.newline()
@@ -242,10 +265,7 @@ exports["default"] = function () {
                 let _status = this.testResult[index][2];
                 let comment = null;
 
-                if (_status === "Skipped") {
-                    _status = 6;
-                    comment = "Test Skipped";
-                } else if (_status === "Passed") {
+                if (_status === "Passed") {
                     _status = 1;
                     comment =
                         typeof this.testResult[index][5] !== "undefined" &&
@@ -260,6 +280,7 @@ exports["default"] = function () {
                             ? this.testResult[index][4] +
                               this.testResult[index][5]
                             : this.testResult[index][4]; // if error found for the Test, It will populated in the comment
+                    allScreenshots[caseID] = this.testResult[index][6];
                 }
 
                 let Testresult = {};
@@ -277,15 +298,39 @@ exports["default"] = function () {
                 return;
             }
 
-            let testrail_api = new TestRail({
-                host: this.TestrailHost,
-                username: this.TestrailUserName,
-                password: this.TestrailPassword,
-            });
+            let testrail_api = new TestRail.TestRail(
+                this.TestrailHost,
+                this.TestrailUserName,
+                this.TestrailPassword
+            );
 
-            let result = { results: resultsTestcases };
-
-            await testrail_api.addResultsForCases(this.RunId, result);
+            for (let testcase of resultsTestcases) {
+                await testrail_api
+                    .addResultForCase(
+                        this.RunID,
+                        Number(testcase.case_id),
+                        testcase
+                    )
+                    .then(async (response) => {
+                        for (const shot in allScreenshots) {
+                            if (
+                                Number(shot.trim()) === Number(testcase.case_id)
+                            ) {
+                                await testrail_api
+                                    .addAttachmentToResult(
+                                        response.value.id,
+                                        allScreenshots[shot]
+                                    )
+                                    .then((response) => {
+                                        console.log(response);
+                                        console.log(
+                                            "Screenshot has been added"
+                                        );
+                                    });
+                            }
+                        }
+                    });
+            }
         },
     };
 };
