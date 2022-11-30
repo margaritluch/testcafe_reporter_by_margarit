@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "description": "made-by-margarit TestCafe reporter plugin.",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "@margarit:registry": "https://npm.pkg.github.com"
   },
   "repository": "https://github.com/margaritluch/testcafe_reporter_by_margarit.git",
   "author": {
