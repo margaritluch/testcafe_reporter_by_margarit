@@ -5,7 +5,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "repository": "git://https://github.com/margaritluch/testcafe_reporter_by_magi",
+  "repository": "https://github.com/margaritluch/testcafe_reporter_by_magi.git",
   "author": {
     "name": "Margarit",
     "email": "margaritdk@gmail.com"
