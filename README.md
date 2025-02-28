@@ -38,6 +38,23 @@ test.meta({ steps: LoginTest_Steps })('<< Group Name>> | << Test Name >> | << Te
 });
 ```
 
+You can also use meta for conditionally skipping the test. If you use the word 'skipped', when adding message to meta object then the test will be skipped, fx
+
+```
+const LoiginTest_Steps =[];
+test.meta({ steps: LoginTest_Steps })('<< Group Name>> | << Test Name >> | << Testrail Case_ID >> ', async t => {
+    let a = 5;
+    let b = 5;
+    if(a===b)
+    {
+       LoginTest_Steps.push("I skipped the test because a=b);
+    }else{
+    await t.click(x_button);
+    LoginTest_Steps.push("I click on x button);
+    }
+});
+```
+
 The result will look like this in Testrail:
 ![Steps in Testrail](/media/reporter_steps.png)
 
