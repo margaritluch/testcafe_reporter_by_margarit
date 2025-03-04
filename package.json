@@ -10,7 +10,7 @@
     "name": "Margarit",
     "email": "margaritdk@gmail.com"
   },
-  "main": "lib/index",
+  "main": "src/index",
   "scripts": {
     "test": "gulp test",
     "publish-please": "publish-please",
